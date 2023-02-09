@@ -1,5 +1,6 @@
 import { useState } from "react";
-import UpdateAllDayEvent from "./UpdateAllDayEvent";
+
+import UpdateEvent from "./UpdateEvent";
 
 const AllDayEvent = ({ event, isUpdated }) => {
   const [show, setShow] = useState(false);
@@ -14,14 +15,7 @@ const AllDayEvent = ({ event, isUpdated }) => {
         <h5>{event.title}</h5>
         <span>{event.location}</span>
       </div>
-      {show && (
-        <UpdateAllDayEvent
-          show={show}
-          close={handleClose}
-          event={event}
-          isUpdated={isUpdated}
-        />
-      )}
+      {show && <UpdateEvent show={show} event={event} close={handleClose} />}
     </>
   );
 };

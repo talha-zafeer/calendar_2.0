@@ -10,9 +10,11 @@ const convert = (time) => {
 const overLappingEvents = (events) => {
   const overlappingEvents = [];
 
-  events.sort((a, b) => (convert(a.startAt) > convert(b.startAt) ? 1 : -1));
-  let currentEndTime = convert(events[0].endAt);
-  let currentGroup = [events[0]];
+  events.sort((a, b) => (convert(a.startAt) < convert(b.startAt) ? -1 : 1));
+
+  // events.sort((a, b) => (convert(a.startAt) > convert(b.startAt) ? 1 : -1));
+  let currentEndTime = convert(events[0].endAt),
+    currentGroup = [events[0]];
   for (let i = 1; i < events.length; i++) {
     if (convert(events[i].startAt) < currentEndTime) {
       currentGroup.push(events[i]);
@@ -27,4 +29,4 @@ const overLappingEvents = (events) => {
   return overlappingEvents;
 };
 
-export { overLappingEvents };
+export { convert, overLappingEvents };

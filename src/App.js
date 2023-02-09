@@ -1,15 +1,12 @@
-// import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.css";
-import Calendar from "./Calendar";
-import NavBar from "./NavBar";
-import LogIn from "./LogIn";
-import Create from "./Create";
-import CreateAllDay from "./CreateAllDay";
-import SignUp from "./SignUp";
+import Calendar from "./views/Calendar";
+import NavBar from "./components/NavBar";
+import Create from "./views/Create";
+import SignUp from "./views/SignUp";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Footer from "./Footer";
-import ProtectedRoutes from "./ProtectedRoutes";
-import NewLogIn from "./NewLogIn";
+import Footer from "./components/Footer";
+import ProtectedRoutes from "./components/ProtectedRoutes";
+import LogIn from "./views/LogIn";
 
 function App() {
   return (
@@ -17,11 +14,10 @@ function App() {
       <div className="App">
         <NavBar />
         <Routes>
-          <Route path="/" element={<NewLogIn />} />
+          <Route path="/" element={<LogIn />} />
           <Route element={<ProtectedRoutes />}>
             <Route path="calendar" element={<Calendar />} />
             <Route path="create-event" element={<Create />} />
-            <Route path="create-all-day" element={<CreateAllDay />} />
           </Route>
           <Route path="sign-up" element={<SignUp />} />
 

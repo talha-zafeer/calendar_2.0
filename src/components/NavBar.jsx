@@ -1,19 +1,21 @@
 import { Navbar, Nav, Container } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { Calendar2Check } from "react-bootstrap-icons";
+import { apiEndPoints, apiHeaders } from "../constants";
 
 const NavBar = () => {
   const navigate = useNavigate();
   const logOut = () => {
-    const result = fetch("/logout", {
+    const result = fetch("http://localhost:8000/logout", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: apiHeaders.LOGIN_HEADERS,
+      credentials: "include",
     })
       .then((result) => {
+        console.log(result);
         if (result.ok) {
           localStorage.removeItem("name");
           localStorage.removeItem("isAuthenticated");
-
           navigate("/");
         }
       })
@@ -35,9 +37,6 @@ const NavBar = () => {
               </Link>
               <Link to="create-event" className="nav-link">
                 Create Event
-              </Link>
-              <Link to="create-all-day" className="nav-link">
-                Create All-Day Event
               </Link>
             </Nav>
             <Navbar.Collapse className="justify-content-end">

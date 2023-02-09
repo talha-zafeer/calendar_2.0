@@ -1,8 +1,6 @@
 import { convertTime } from "./convertTime";
-// import { listenForOverlap } from "element-overlap";
 
-var listenForOverlap = require("element-overlap").listenForOverlap;
-
+const listenForOverlap = require("element-overlap").listenForOverlap;
 const alignTasks = (renderedEvents) => {
   let time, time1, time2;
   renderedEvents.sort((a, b) => (a.startAt < b.startAt ? -1 : 1));

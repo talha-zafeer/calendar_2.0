@@ -11,6 +11,8 @@ import {
   MDBInput,
   MDBIcon,
 } from "mdb-react-ui-kit";
+import { useEffect } from "react";
+import { apiEndPoints, apiHeaders, endpoints } from "../constants";
 
 const NewLogIn = () => {
   const [email, setEmail] = useState("");
@@ -20,16 +22,20 @@ const NewLogIn = () => {
   const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    localStorage.getItem("isAuthenticated") && navigate("Calendar");
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // const blog = { title, body, author };
     setIsPending(true);
 
     try {
-      const result = await fetch("/login", {
+      const result = await fetch(apiEndPoints.LOGIN, {
         method: "POST",
         body: JSON.stringify({ email, password }),
-        headers: { "Content-Type": "application/json" },
+        headers: apiHeaders.LOGIN_HEADERS,
+        credentials: "include",
       });
       const data = await result.json();
       if (data.errors) {
@@ -58,48 +64,47 @@ const NewLogIn = () => {
             style={{ borderRadius: "1rem", maxWidth: "400px" }}
           >
             <MDBCardBody className="p-5 d-flex flex-column align-items-center mx-auto w-100">
-              <h2 className="fw-bold mb-2 text-uppercase">Login</h2>
-              <p className="text-white-50 mb-5">
-                Please enter your login and password!
-              </p>
-
-              <MDBInput
-                wrapperClass="mb-4 mx-5 w-100"
-                className="text-white"
-                labelClass="text-white"
-                label="Email address"
-                id="formControlLg"
-                type="email"
-                size="lg"
-                defaultValue=""
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <MDBInput
-                wrapperClass="mb-4 mx-5 w-100"
-                labelClass="text-white"
-                className="text-white"
-                label="Password"
-                id="formControlLg"
-                type="password"
-                size="lg"
-                defaultValue=""
-                onChange={(e) => setPassword(e.target.value)}
-              />
-
-              <p className="smaasdsall mb-3 pb-lg-2">
-                <a className="text-white-50" href="#!">
-                  Forgot password?
-                </a>
-              </p>
-              <MDBBtn
-                outline
-                onClick={handleSubmit}
-                className="mx-2 px-5"
-                color="white"
-                size="lg"
+              <form
+                className="align-items-center d-flex flex-column"
+                onSubmit={handleSubmit}
               >
-                Login
-              </MDBBtn>
+                <h2 className="fw-bold mb-2 text-uppercase">Login</h2>
+                <p className="text-white-50 mb-5">
+                  Please enter your login and password!
+                </p>
+
+                <MDBInput
+                  wrapperClass="mb-4 mx-5 w-100"
+                  className="text-white"
+                  labelClass="text-white"
+                  label="Email address"
+                  id="formControlLg"
+                  type="email"
+                  size="lg"
+                  defaultValue=""
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <MDBInput
+                  wrapperClass="mb-4 mx-5 w-100"
+                  labelClass="text-white"
+                  className="text-white"
+                  label="Password"
+                  id="formControlLg"
+                  type="password"
+                  size="lg"
+                  defaultValue=""
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <p className="smaasdsall mb-3 pb-lg-2">
+                  <a className="text-white-50" href="#!">
+                    Forgot password?
+                  </a>
+                </p>
+                <MDBBtn outline className="mx-2 px-5" color="white" size="lg">
+                  Login
+                </MDBBtn>
+              </form>
 
               <div className="d-flex flex-row mt-3 mb-5">
                 <MDBBtn

@@ -21,4 +21,14 @@ const timeString = (time) => {
 
   return time;
 };
-export { convertTime, timeString };
+
+const convertToDate = (time) => {
+  const date = new Date();
+  if (time.includes(".")) {
+    date.setHours(time.substring(0, time.indexOf(".")), "30", "00");
+  } else {
+    date.setHours(time, "00", "00");
+  }
+  return date;
+};
+export { convertTime, timeString, convertToDate };

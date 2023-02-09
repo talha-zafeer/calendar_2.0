@@ -1,48 +1,29 @@
 import { useEffect, useState } from "react";
-import { ChevronCompactLeft } from "react-bootstrap-icons";
-import AllDayEvent from "./AllDayEvent";
-import { alignTasks } from "./helper/alignTasks";
-import Hour from "./Hour";
-import { overLappingEvents } from "./helper/checkOverLapping";
-import Event from "./Event";
-import DummyEvent from "./DummyEvent";
+import AllDayEvent from "../components/AllDayEvent";
+import Hour from "../components/Hour";
+import { overLappingEvents } from "../helper/checkOverLapping";
+import DummyEvent from "../components/Event";
+import useFetch from "../hooks/useFetch";
+import { apiHeaders, apiMethods, apiEndPoints } from "../constants";
 
 const Calendar = () => {
   const amHours = [];
   const pmHours = [];
   const renderedEvents = [];
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState(null);
   const [dayEvents, setDayEvents] = useState([]);
   const [flag, setFlag] = useState(false);
-  const [overlappingEvents, setOverLappingEvents] = useState([]);
+  const [overlappingEvents, setOverLappingEvents] = useState(null);
   const [arr, setArr] = useState([]);
   const [parent, setParent] = useState([]);
 
-  const isUpdated = () => {
-    if (flag === true) {
-      setFlag(false);
-    } else {
-      setFlag(true);
-    }
-  };
+  const { data, isPending, error } = useFetch(
+    apiEndPoints.GET_EVENTS,
+    apiMethods.GET,
+    apiHeaders.HEADERS
+  );
 
-  async function getEvents() {
-    try {
-      const result = await fetch("/events", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      let { data } = await result.json();
-      setEvents(data.events);
-      setDayEvents(data.dayEvents);
-      setOverLappingEvents(overLappingEvents(data.events));
-      setFlag(true);
-    } catch (err) {
-      console.log("Error ", err);
-    }
-  }
-
-  // events.sort((a, b) => (a.endAt - a.startAt < b.endAt - b.startAt ? 1 : -1));
+  const isUpdated = () => setFlag(!flag);
 
   function setRenderedEvents(event) {
     renderedEvents.push(event);
@@ -54,23 +35,23 @@ const Calendar = () => {
   }
 
   const generatedEvents = () => {
-    overlappingEvents.map((events, idx) => {
+    overlappingEvents?.map((events, idx) => {
       setParent((current) => [...current, events[0]]);
       setArr((current) => [
         ...current,
-        <DummyEvent events={events} isUpdated={isUpdated} />,
+        <DummyEvent events={events} isUpdated={isUpdated} key={idx} />,
       ]);
-      // events.map((event) => {
-      //   // arr.push(<DummyEvent event={event} />);
-      // });
     });
   };
 
   useEffect(() => {
-    getEvents();
-    alignTasks(renderedEvents);
+    data && setEvents(data.events);
+    data && setDayEvents(data.dayEvents);
+    data && setOverLappingEvents(overLappingEvents(data.events));
+
+    // alignTasks(renderedEvents);
     generatedEvents();
-  }, [flag]);
+  }, [data, events]);
 
   return (
     <div className="calendar">

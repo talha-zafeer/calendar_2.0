@@ -4,35 +4,37 @@ import Modal from "react-bootstrap/Modal";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import { useNavigate } from "react-router-dom";
 import TimeList from "./TimeList";
+import { MDBBtn } from "mdb-react-ui-kit";
+import { convert } from "../helper/checkOverLapping";
+import { apiEndPoints, apiHeaders, apiMethods } from "../constants";
+import { convertToDate } from "../helper/convertTime";
 
-const UpdateEvent = ({ show, close, event, isUpdated }) => {
+const UpdateEvent = ({ show, close, event, isUpdated, index }) => {
   const time = [];
   const [title, setTitle] = useState(event.title);
   const [location, setLocation] = useState(event.location);
-  const [startTime, setStartTime] = useState(event.startAt);
-  const [endTime, setEndTime] = useState(event.endAt);
+  const [startTime, setStartTime] = useState(convert(event.startAt));
+  const [endTime, setEndTime] = useState(convert(event.endAt));
   const [isPending, setIsPending] = useState(false);
   const [cities, setCities] = useState([]);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
+    console.log(startTime, endTime);
     fetch(`http://api.geonames.org/searchJSON?q=*&country=pk&username=t032`)
       .then((res) => res.json())
       .then((data) => setCities(data.geonames));
 
     const startTimeDropDown = document.querySelector(".start-time");
     const endTimeDropDown = document.querySelector(".end-time");
-    endTimeDropDown.childNodes.forEach((time) => {
+    endTimeDropDown?.childNodes.forEach((time) => {
       if (parseFloat(startTime) >= parseFloat(time.value)) {
         time.disabled = true;
       } else {
         time.disabled = false;
       }
     });
-    startTimeDropDown.childNodes.forEach((time) => {
+    startTimeDropDown?.childNodes.forEach((time) => {
       if (parseFloat(endTime) <= parseFloat(time.value)) {
         time.disabled = true;
       } else {
@@ -48,26 +50,13 @@ const UpdateEvent = ({ show, close, event, isUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const startAt = new Date();
-    const endAt = new Date();
-    if (startTime.includes(".")) {
-      startAt.setHours(
-        startTime.substring(0, startTime.indexOf(".")),
-        "30",
-        "00"
-      );
-    } else {
-      startAt.setHours(startTime, "00", "00");
-    }
-    if (endTime.includes(".")) {
-      endAt.setHours(endTime.substring(0, endTime.indexOf(".")), "30", "00");
-    } else {
-      endAt.setHours(endTime, "00", "00");
-    }
+    const startAt = convertToDate(startTime);
+    const endAt = convertToDate(endTime);
+
     setIsPending(true);
     try {
-      await fetch("/events/update", {
-        method: "PUT",
+      await fetch(apiEndPoints.UPDATE, {
+        method: apiMethods.PATCH,
         body: JSON.stringify({
           id: event._id,
           title,
@@ -77,9 +66,7 @@ const UpdateEvent = ({ show, close, event, isUpdated }) => {
         }),
         headers: { "Content-Type": "application/json" },
       });
-      isUpdated();
       close();
-      // navigate("/calendar");
       window.location.reload();
     } catch (error) {
       console.log(error);
@@ -88,19 +75,15 @@ const UpdateEvent = ({ show, close, event, isUpdated }) => {
   const handleDelete = () => {
     setIsPending(true);
 
-    console.log("Deleting ");
-
-    const id = event._id;
-    const endpoint = `/events/delete/${id}`;
-
-    fetch(endpoint, { method: "DELETE" })
+    fetch(`${apiEndPoints.DELETE}/${event._id}`, {
+      method: apiMethods.DELETE,
+      headers: apiHeaders.HEADERS,
+    })
       .then((response) => response.json())
       .then(() => {
-        isUpdated();
+        // isUpdated();
         close();
         window.location.reload();
-
-        // navigate("/calendar");
       })
       .catch((error) => {
         console.log(error);
@@ -113,7 +96,7 @@ const UpdateEvent = ({ show, close, event, isUpdated }) => {
       style={{ display: "block", position: "initial" }}
     >
       <Modal show={show} onHide={close}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="text-black">
           <Modal.Title>Update Event</Modal.Title>
         </Modal.Header>
 
@@ -142,57 +125,75 @@ const UpdateEvent = ({ show, close, event, isUpdated }) => {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Row className="mb-3">
-              <Form.Group as={Col} controlId="formGridState">
-                <Form.Label>Start Time</Form.Label>
-                <Form.Select
-                  defaultValue={event.startAt}
-                  className="start-time"
-                  onChange={(e) => setStartTime(e.target.value)}
-                >
-                  {time.map((t) => (
-                    <TimeList time={t} key={t} />
-                  ))}
-                </Form.Select>
-              </Form.Group>
+            {!event.type && (
+              <Row className="mb-3">
+                <Form.Group as={Col} controlId="formGridState">
+                  <Form.Label>Start Time</Form.Label>
+                  <Form.Select
+                    defaultValue={startTime}
+                    className="start-time"
+                    onChange={(e) => setStartTime(e.target.value)}
+                  >
+                    {time.map((t) => (
+                      <TimeList time={t} key={t} />
+                    ))}
+                  </Form.Select>
+                </Form.Group>
 
-              <Form.Group as={Col} controlId="formGridState">
-                <Form.Label>End Time</Form.Label>
-                <Form.Select
-                  defaultValue={event.endAt}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="end-time"
-                >
-                  {time.map((t) => (
-                    <TimeList time={t} key={t} />
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Row>
+                <Form.Group as={Col} controlId="formGridState">
+                  <Form.Label>End Time</Form.Label>
+                  <Form.Select
+                    defaultValue={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="end-time"
+                  >
+                    {time.map((t) => (
+                      <TimeList time={t} key={t} />
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Row>
+            )}
           </Form>
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="secondary" onClick={close}>
+          <MDBBtn className="border-0 bg-primary" onClick={close}>
             Close
-          </Button>
+          </MDBBtn>
           {!isPending && (
-            <Button variant="success" onClick={handleSubmit}>
+            <Button
+              variant="success"
+              className="border-0"
+              onClick={handleSubmit}
+            >
               Save Changes
             </Button>
           )}
           {isPending && (
-            <Button variant="success" onClick={handleSubmit}>
+            <Button
+              variant="success"
+              className="border-0"
+              onClick={handleSubmit}
+            >
               Saving Changes ...
             </Button>
           )}
           {!isPending && (
-            <Button variant="danger" onClick={handleDelete}>
+            <Button
+              variant="danger"
+              className="border-0"
+              onClick={handleDelete}
+            >
               Delete
             </Button>
           )}
           {isPending && (
-            <Button variant="danger" onClick={handleDelete}>
+            <Button
+              variant="danger"
+              className="border-0"
+              onClick={handleDelete}
+            >
               Deleting ...
             </Button>
           )}
